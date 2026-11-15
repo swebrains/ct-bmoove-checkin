@@ -1,0 +1,981 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B.MOOVE · Remarcação (PROTÓTIPO)</title>
+<style>
+  :root{
+    --bg:#f4f4f1; --card:#ffffff; --ink:#1b1b1f; --muted:#6b6b73; --line:#e4e4df;
+    --accent:#3b2fd9; --accent-soft:#ecebff;
+    --ok:#0f8a5f; --ok-soft:#e3f6ee; --ok-strong:#0f8a5f;
+    --full:#b4323a; --full-soft:#fbe9ea;
+    --off:#a3a3aa; --off-soft:#f0f0ee;
+    --warn:#a8650a; --warn-soft:#fdf1df;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  button{font:inherit;cursor:pointer}
+  .topo{padding:20px 24px 8px;max-width:1240px;margin:0 auto}
+  .topo h1{margin:0;font-size:20px}
+  .topo p{margin:4px 0 0;color:var(--muted);max-width:900px}
+  .tag{display:inline-block;background:var(--warn-soft);color:var(--warn);font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;letter-spacing:.04em;vertical-align:middle;margin-left:6px}
+  .wrap{display:grid;grid-template-columns:400px 1fr;gap:24px;max-width:1240px;margin:0 auto;padding:12px 24px 40px;align-items:start}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr;padding:12px 16px 40px}.topo{padding:16px 16px 4px}}
+
+  /* ---------- "celular" do aluno ---------- */
+  .phone{background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;position:relative;height:min(820px,calc(100vh - 40px));display:flex;flex-direction:column;box-shadow:0 8px 30px rgba(0,0,0,.06);position:sticky;top:16px}
+  @media (max-width:900px){.phone{position:relative;top:0;height:760px}}
+  .screen{flex:1;overflow-y:auto;padding-bottom:120px}
+  .brand{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .brand b{letter-spacing:.06em}
+  .link{background:none;border:0;color:var(--accent);padding:4px}
+  .login{padding:36px 24px}
+  .login h2{margin:0 0 4px;font-size:22px}
+  .login p{color:var(--muted);margin:0 0 20px}
+  .field{display:block;margin-bottom:14px}
+  .field span{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+  .field input{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:16px;letter-spacing:.04em}
+  .btn{display:block;width:100%;padding:12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font-weight:600}
+  .btn.sec{background:var(--off-soft);color:var(--ink)}
+  .hint{margin-top:18px;font-size:12px;color:var(--muted);background:var(--off-soft);padding:10px;border-radius:8px}
+
+  .ola{padding:16px 18px 6px}
+  .ola h2{margin:0;font-size:18px}
+  .ola .plano{color:var(--muted);font-size:13px}
+  .contador{margin:10px 18px 4px;padding:10px 12px;background:var(--accent-soft);border-radius:10px;font-size:13px}
+  .legenda{display:flex;flex-wrap:wrap;gap:6px 12px;padding:8px 18px 4px;font-size:11px;color:var(--muted)}
+  .legenda i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+
+  .dia{margin:10px 12px 0;border:1px solid var(--line);border-radius:14px;padding:10px 10px 12px}
+  .dia.hoje{border-color:var(--ink)}
+  .dia h3{margin:0 0 8px 2px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+  .dia h3 small{font-weight:400;color:var(--muted)}
+  .vazio{font-size:12px;color:var(--muted);padding:2px}
+  .fechadoAviso{font-size:12px;color:var(--warn);background:var(--warn-soft);padding:6px 8px;border-radius:8px;margin-bottom:8px}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px}
+  .slot{user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;border:1px solid var(--line);background:#fff;border-radius:10px;padding:6px 6px 5px;text-align:left;display:flex;flex-direction:column;gap:1px;min-height:54px}
+  .slot .h{font-weight:700;font-size:14px}
+  .slot .m{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px}
+  .slot .m:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--modc,#999)}
+  .slot .st{font-size:11px}
+  .s-disponivel .st{color:var(--ok);font-weight:600}
+  .s-lotado{background:var(--full-soft);border-color:transparent}
+  .s-lotado .st{color:var(--full);font-weight:600}
+  .s-encerrado,.s-fechado{background:var(--off-soft);border-color:transparent;color:var(--off)}
+  .slot:disabled{cursor:not-allowed}
+  .s-fechado .h{text-decoration:line-through}
+  .s-encerrado .m,.s-fechado .m{color:var(--off)}
+  .s-meu{background:var(--accent);border-color:var(--accent);color:#fff}
+  .s-meu .m,.s-novo .m{color:rgba(255,255,255,.85)}
+  .s-novo{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:inset 0 0 0 2px #fff, 0 0 0 2px var(--accent)}
+  .s-meu.passou,.s-novo.passou{opacity:.45}
+  .s-liberado{background:repeating-linear-gradient(-45deg,#fff,#fff 5px,var(--accent-soft) 5px,var(--accent-soft) 10px);border-color:var(--accent);border-style:dashed}
+  .s-liberado .st{color:var(--accent)}
+  .s-cancelado{background:#fff;border:1px dashed var(--full)}
+  .s-cancelado .st{color:var(--full)}
+  .slot.sel{outline:3px solid var(--warn);outline-offset:1px;cursor:not-allowed}
+  .slot:focus{outline:none}
+  .slot.sel:focus{outline:3px solid var(--warn)}
+  .opcoes{display:flex;flex-direction:column;gap:8px}
+  .btn.perigo{background:var(--full)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .motivo{font-size:12px;color:var(--muted);margin:-4px 0 4px}
+  .outros{border:1px solid var(--warn);background:var(--warn-soft);border-radius:10px;padding:10px;margin-bottom:14px;font-size:13px}
+  .outro{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+  .seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .seg button{border:0;background:#fff;padding:5px 10px;font-size:12px}
+  .seg button.on{background:var(--ink);color:#fff}
+  .seg button.on.canc{background:var(--full)}
+  .slot.alvo{background:var(--ok-strong);border-color:var(--ok-strong);color:#fff}
+  .slot.alvo .m,.slot.alvo .st{color:#fff}
+  .slot.dim{opacity:.35}
+
+  .remList{margin:16px 12px 0;border-top:1px solid var(--line);padding-top:12px}
+  .remList h3{margin:0 0 8px 4px;font-size:13px}
+  .rem{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;font-size:12px}
+  .rem.desfeita{color:var(--off);text-decoration:line-through}
+  .rem button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 8px;font-size:12px}
+
+  .barra{position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:#fff;padding:12px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px}
+  .barra button{background:#fff;color:var(--ink);border:0;border-radius:8px;padding:6px 10px;font-weight:600}
+  .toast{pointer-events:none;position:absolute;left:12px;right:12px;bottom:76px;padding:10px 12px;border-radius:10px;font-size:13px;background:#2b2b31;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+  .toast.erro{background:var(--full)}
+  .toast.ok{background:var(--ok)}
+  .modal{position:absolute;inset:0;background:rgba(20,20,25,.45);display:flex;align-items:flex-end}
+  .sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:20px}
+  .sheet h3{margin:0 0 12px}
+  .troca{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:16px}
+  .troca div{border:1px solid var(--line);border-radius:10px;padding:10px;font-size:13px}
+  .troca small{display:block;color:var(--muted);font-size:11px}
+  .sheet .acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+  /* ---------- painel do protótipo ---------- */
+  .painel{display:flex;flex-direction:column;gap:16px}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+  .box h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .chip{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px}
+  .chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  select{font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--line);background:#fff}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media (max-width:1100px){.grid2{grid-template-columns:1fr}}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px}
+  .kv dt{color:var(--muted)}
+  .kv dd{margin:0}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500}
+  .log{font-size:12px;max-height:220px;overflow:auto}
+  .log div{padding:4px 0;border-bottom:1px solid var(--line)}
+  .log .erro{color:var(--full)}
+  .log .ok{color:var(--ok)}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+  .cen p{margin:0 0 8px}
+  .cen .obs{background:var(--accent-soft);padding:8px 10px;border-radius:8px;font-size:13px;margin-bottom:10px}
+  .passos{display:flex;flex-direction:column;gap:6px}
+  .passo{text-align:left;border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px}
+  .passo:disabled{opacity:.4;cursor:default}
+  .passo.feito{background:var(--ok-soft);border-color:transparent;opacity:1}
+  .passo.prox{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .muted{color:var(--muted)}
+  .novo-flag{background:var(--warn-soft);color:var(--warn);border-radius:4px;padding:0 4px;font-size:11px}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <h1>B.MOOVE · Remarcação de treino <span class="tag">PROTÓTIPO DESCARTÁVEL</span></h1>
+  <p><b>Pergunta que este protótipo responde:</b> as regras de remarcação e cancelamento (qualquer modalidade do plano do aluno, só onde há vaga, dias úteis numa janela de 15 dias,
+  antecedência mínima, limite de remarcações, desfazer) fazem sentido para o aluno e para o CT? À esquerda, o app do aluno.
+  À direita, o "painel" com os dados que o só o CT pode acessar: alterações dos alunos, regras ajustáveis, cenários guiados e o estado completo. Dados fictícios, nada é salvo nesse protótipo.</p>
+</header>
+
+<div class="wrap">
+  <div class="phone" id="phone">
+    <div class="brand"><b>B.MOOVE</b><span id="brandRight"></span></div>
+    <div class="screen" id="screen"></div>
+    <div id="overlay"></div>
+  </div>
+
+  <div class="painel" id="painel"></div>
+</div>
+
+<script>
+/* =====================================================================
+   MÓDULO DE REGRAS — puro (sem DOM). É a parte que vale levar ao MVP.
+   Horários são "relógio de parede" do CT (sem fuso), em minutos.
+   ===================================================================== */
+const Regras = (() => {
+  const pad = n => String(n).padStart(2, '0');
+  const toMin = (data, hora = '00:00') => {
+    const [y, m, d] = data.split('-').map(Number), [h, mi] = hora.split(':').map(Number);
+    return Date.UTC(y, m - 1, d, h, mi) / 60000;
+  };
+  const deMin = min => {
+    const t = new Date(min * 60000);
+    return { data: `${t.getUTCFullYear()}-${pad(t.getUTCMonth() + 1)}-${pad(t.getUTCDate())}`,
+             hora: `${pad(t.getUTCHours())}:${pad(t.getUTCMinutes())}` };
+  };
+  const addDias = (data, n) => deMin(toMin(data) + n * 1440).data;
+  const diaSemana = data => new Date(toMin(data) * 60000).getUTCDay(); // 0=dom
+  const chave = (mod, data, hora) => `${mod}|${data}|${hora}`;
+  const mesmo = (a, b) => a.mod === b.mod && a.data === b.data && a.hora === b.hora;
+
+  const hoje = s => deMin(s.agora).data;
+  // 15 dias corridos a partir de hoje, exibindo só os dias em que o CT funciona (seg–sex)
+  const janela = s => Array.from({ length: s.config.janelaDias }, (_, i) => addDias(hoje(s), i))
+    .filter(d => s.ct.diasFuncionamento.includes(diaSemana(d)));
+  const modalidadesDoAluno = (s, mat) => [...new Set(aluno(s, mat).treinos.map(t => t.mod))];
+  const aluno = (s, mat) => s.alunos.find(a => a.matricula === mat);
+  const fechado = (s, data) => s.ct.fechados.find(f => f.data === data);
+  const capacidade = (s, mod) => s.ct.modalidades[mod].capacidade;
+  const horariosGrade = (s, mod, data) => {
+    const ds = diaSemana(data);
+    return s.ct.grade.filter(g => g.mod === mod && g.dias.includes(ds)).flatMap(g => g.horas).sort();
+  };
+  const minutosAte = (s, data, hora) => toMin(data, hora) - s.agora;
+  const respeitaAntecedencia = (s, data, hora) => minutosAte(s, data, hora) >= s.config.antecedenciaHoras * 60;
+
+  const remAtivas = (s, mat) => s.remarcacoes.filter(r => r.status === 'ativa' && (!mat || r.matricula === mat));
+  const fixosNoHorario = (s, mod, data, hora) => {
+    const ds = diaSemana(data);
+    return s.alunos.filter(a => a.treinos.some(t => t.mod === mod && t.dia === ds && t.hora === hora));
+  };
+
+  function hash(str) { let h = 2166136261; for (const c of str) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+
+  // Alunos "não modelados" no protótipo: ocupação simulada, determinística.
+  function outrosAlunos(s, mod, data, hora) {
+    const k = chave(mod, data, hora), cap = capacidade(s, mod);
+    const teto = cap - fixosNoHorario(s, mod, data, hora).length;
+    let base;
+    if (k in s.baseFixa) base = s.baseFixa[k];
+    else {
+      const pico = ['07:00', '18:00', '19:00'].includes(hora);
+      base = Math.floor(cap * (((hash(k) % 100) / 100) * 0.75 + (pico ? 0.3 : 0)));
+    }
+    return Math.max(0, Math.min(base, teto)) + (s.ajustes[k] || 0);
+  }
+
+  function ocupadas(s, mod, data, hora) {
+    let n = outrosAlunos(s, mod, data, hora);
+    for (const a of fixosNoHorario(s, mod, data, hora)) {
+      const saiu = remAtivas(s, a.matricula).some(r => mesmo(r.de, { mod, data, hora }));
+      if (!saiu) n++;
+    }
+    n += remAtivas(s).filter(r => r.para && mesmo(r.para, { mod, data, hora })).length;
+    return n;
+  }
+  const vagas = (s, mod, data, hora) => capacidade(s, mod) - ocupadas(s, mod, data, hora);
+
+  // Treinos do aluno na janela.
+  // tipo: fixo | remarcado (novo horário) | liberado (deixou ao remarcar) | cancelado (deixou sem novo horário)
+  const ativo = c => c.tipo === 'fixo' || c.tipo === 'remarcado';
+  function compromissos(s, mat) {
+    const a = aluno(s, mat), out = [];
+    for (const data of janela(s)) {
+      const ds = diaSemana(data);
+      for (const t of a.treinos.filter(t => t.dia === ds)) {
+        const rem = remAtivas(s, mat).find(r => mesmo(r.de, { mod: t.mod, data, hora: t.hora }));
+        const tipo = !rem ? 'fixo' : rem.para ? 'liberado' : 'cancelado';
+        out.push({ mod: t.mod, data, hora: t.hora, tipo, remId: rem && rem.id });
+      }
+    }
+    for (const r of remAtivas(s, mat)) if (r.para) out.push({ ...r.para, tipo: 'remarcado', remId: r.id });
+    return out;
+  }
+
+  // Só remarcações contam para o limite; cancelamentos não.
+  function remarcacoesUsadas(s, mat) {
+    const inicioHoje = toMin(hoje(s));
+    return remAtivas(s, mat).filter(r => r.para && toMin(r.de.data, r.de.hora) >= inicioHoje).length;
+  }
+  function cancelamentos(s, mat) {
+    const inicioHoje = toMin(hoje(s));
+    return remAtivas(s, mat).filter(r => !r.para && toMin(r.de.data, r.de.hora) >= inicioHoje).length;
+  }
+
+  function podeSair(s, mat, ref) {
+    const c = compromissos(s, mat).find(x => mesmo(x, ref) && ativo(x));
+    if (!c) return { ok: false, motivo: 'Este horário não é um treino seu.' };
+    if (minutosAte(s, ref.data, ref.hora) < 0) return { ok: false, motivo: 'Este treino já passou.' };
+    const f = fechado(s, ref.data);
+    if (f) return { ok: false, motivo: `O CT estará fechado neste dia (${f.motivo}).` };
+    if (!respeitaAntecedencia(s, ref.data, ref.hora))
+      return { ok: false, motivo: `Remarcações precisam de pelo menos ${s.config.antecedenciaHoras}h de antecedência.` };
+    if (c.tipo === 'fixo') {
+      const usadas = remarcacoesUsadas(s, mat), lim = s.config.limiteRemarcacoes;
+      if (usadas >= lim) return { ok: false, motivo: `Você já usou ${usadas} de ${lim} remarcações permitidas nos próximos ${s.config.janelaDias} dias.` };
+    }
+    return { ok: true, compromisso: c };
+  }
+
+  function podeCancelar(s, mat, ref) {
+    const c = compromissos(s, mat).find(x => mesmo(x, ref) && ativo(x));
+    if (!c) return { ok: false, motivo: 'Este horário não é um treino seu.' };
+    if (minutosAte(s, ref.data, ref.hora) < 0) return { ok: false, motivo: 'Este treino já passou.' };
+    const f = fechado(s, ref.data);
+    if (f) return { ok: false, motivo: `O CT estará fechado neste dia (${f.motivo}).` };
+    if (minutosAte(s, ref.data, ref.hora) < s.config.antecedenciaCancelamentoHoras * 60)
+      return { ok: false, motivo: `Cancelamentos precisam de pelo menos ${s.config.antecedenciaCancelamentoHoras}h de antecedência.` };
+    return { ok: true, compromisso: c };
+  }
+
+  function podeEntrar(s, mat, origem, destino) {
+    const saida = podeSair(s, mat, origem);
+    if (!saida.ok) return saida;
+    if (mesmo(origem, destino)) return { ok: false, motivo: 'Este já é o horário atual do treino.' };
+    if (!modalidadesDoAluno(s, mat).includes(destino.mod)) return { ok: false, motivo: 'Você só pode remarcar para modalidades do seu plano.' };
+    if (!janela(s).includes(destino.data)) return { ok: false, motivo: `Só é possível remarcar para dias úteis (seg a sex) dentro dos próximos ${s.config.janelaDias} dias.` };
+    if (!horariosGrade(s, destino.mod, destino.data).includes(destino.hora)) return { ok: false, motivo: 'Este horário não existe na grade do CT.' };
+    const f = fechado(s, destino.data);
+    if (f) return { ok: false, motivo: `CT fechado neste dia (${f.motivo}).` };
+    if (minutosAte(s, destino.data, destino.hora) < 0) return { ok: false, motivo: 'Este horário já passou.' };
+    if (!respeitaAntecedencia(s, destino.data, destino.hora))
+      return { ok: false, motivo: `O novo horário precisa estar a pelo menos ${s.config.antecedenciaHoras}h de agora.` };
+    const conflito = compromissos(s, mat).find(c => ativo(c) && !mesmo(c, origem) && c.data === destino.data && c.hora === destino.hora);
+    if (conflito) return { ok: false, motivo: 'Você já tem um treino neste horário.' };
+    if (vagas(s, destino.mod, destino.data, destino.hora) <= 0)
+      return { ok: false, motivo: `Horário lotado (${capacidade(s, destino.mod)} de ${capacidade(s, destino.mod)} vagas ocupadas).` };
+    return { ok: true, compromisso: saida.compromisso };
+  }
+
+  // Outros treinos do aluno no dia de destino (o aluno decide se mantém ou cancela cada um).
+  function outrosTreinosNoDia(s, mat, origem, data) {
+    return compromissos(s, mat).filter(c => ativo(c) && c.data === data && !mesmo(c, origem))
+      .map(c => ({ mod: c.mod, data: c.data, hora: c.hora, cancelavel: podeCancelar(s, mat, c) }));
+  }
+
+  function aplicarCancelamento(s, mat, c) {
+    if (c.tipo === 'remarcado') // cancelar um treino já remarcado: a remarcação vira cancelamento
+      return { ...s, remarcacoes: s.remarcacoes.map(x => x.id === c.remId ? { ...x, para: null, alteradaEm: s.agora } : x) };
+    const nova = { id: s.seq + 1, matricula: mat, de: { mod: c.mod, data: c.data, hora: c.hora }, para: null, status: 'ativa', criadaEm: s.agora };
+    return { ...s, seq: s.seq + 1, remarcacoes: [...s.remarcacoes, nova] };
+  }
+
+  function cancelar(s, mat, ref) {
+    const r = podeCancelar(s, mat, ref);
+    if (!r.ok) return { estado: s, erro: r.motivo };
+    return { estado: aplicarCancelamento(s, mat, r.compromisso), msg: 'Treino cancelado. A vaga foi liberada.' };
+  }
+
+  function remarcar(s, mat, origem, destino, cancelarTambem = []) {
+    const r = podeEntrar(s, mat, origem, destino);
+    if (!r.ok) return { estado: s, erro: r.motivo };
+    const outros = outrosTreinosNoDia(s, mat, origem, destino.data);
+    for (const ref of cancelarTambem) {
+      const o = outros.find(x => mesmo(x, ref));
+      if (!o) return { estado: s, erro: 'Só é possível cancelar outro treino do mesmo dia.' };
+      if (!o.cancelavel.ok) return { estado: s, erro: o.cancelavel.motivo };
+    }
+    const c = r.compromisso;
+    const para = { mod: destino.mod, data: destino.data, hora: destino.hora };
+    let s2, msg;
+    if (c.tipo === 'remarcado') {
+      // trocar de novo um treino já remarcado: edita a mesma remarcação (não conta outra)
+      s2 = { ...s, remarcacoes: s.remarcacoes.map(x => {
+        if (x.id !== c.remId) return x;
+        return mesmo(x.de, para) ? { ...x, status: 'desfeita', alteradaEm: s.agora } : { ...x, para, alteradaEm: s.agora };
+      }) };
+      msg = 'Remarcação alterada.';
+    } else {
+      const nova = { id: s.seq + 1, matricula: mat, de: { mod: origem.mod, data: origem.data, hora: origem.hora }, para, status: 'ativa', criadaEm: s.agora };
+      s2 = { ...s, seq: s.seq + 1, remarcacoes: [...s.remarcacoes, nova] };
+      msg = 'Treino remarcado.';
+    }
+    for (const ref of cancelarTambem) {
+      const alvo = compromissos(s2, mat).find(x => mesmo(x, ref) && ativo(x));
+      s2 = aplicarCancelamento(s2, mat, alvo);
+    }
+    if (cancelarTambem.length) msg += ` ${cancelarTambem.length === 1 ? 'Outro treino do dia cancelado.' : cancelarTambem.length + ' outros treinos do dia cancelados.'}`;
+    return { estado: s2, msg };
+  }
+
+  function desfazer(s, mat, remId) {
+    const r = s.remarcacoes.find(x => x.id === remId && x.matricula === mat && x.status === 'ativa');
+    if (!r) return { estado: s, erro: 'Alteração não encontrada.' };
+    if (r.para) {
+      if (!respeitaAntecedencia(s, r.para.data, r.para.hora)) return { estado: s, erro: 'O novo treino já está muito próximo (ou já passou) para desfazer.' };
+      if (!respeitaAntecedencia(s, r.de.data, r.de.hora)) return { estado: s, erro: 'O horário original já está muito próximo (ou já passou).' };
+    } else if (minutosAte(s, r.de.data, r.de.hora) < 0) return { estado: s, erro: 'Este treino já passou.' };
+    if (vagas(s, r.de.mod, r.de.data, r.de.hora) <= 0) return { estado: s, erro: 'A vaga do seu horário original já foi ocupada por outro aluno. Escolha outro horário.' };
+    const remarcacoes = s.remarcacoes.map(x => x.id === remId ? { ...x, status: 'desfeita', alteradaEm: s.agora } : x);
+    return { estado: { ...s, remarcacoes }, msg: r.para ? 'Remarcação desfeita. Você voltou ao horário original.' : 'Cancelamento desfeito. Seu treino está mantido.' };
+  }
+
+  // Autenticação: matrícula + código de acesso, com bloqueio após falhas.
+  function autenticar(s, mat, codigo) {
+    mat = String(mat).trim(); codigo = String(codigo).trim().toUpperCase();
+    const t = s.tentativas[mat] || { falhas: 0, bloqueadoAte: 0 };
+    if (t.bloqueadoAte > s.agora)
+      return { estado: s, erro: `Acesso temporariamente bloqueado. Tente em ${t.bloqueadoAte - s.agora} min ou procure a recepção.` };
+    const a = aluno(s, mat);
+    if (a && a.codigo === codigo) return { estado: { ...s, tentativas: { ...s.tentativas, [mat]: { falhas: 0, bloqueadoAte: 0 } } }, aluno: a };
+    const falhas = t.falhas + 1, max = s.config.maxTentativas;
+    const novo = falhas >= max ? { falhas: 0, bloqueadoAte: s.agora + s.config.bloqueioMin } : { falhas, bloqueadoAte: 0 };
+    const erro = falhas >= max ? `Matrícula ou código inválidos. Acesso bloqueado por ${s.config.bloqueioMin} min.`
+                               : `Matrícula ou código inválidos. Restam ${max - falhas} tentativa(s).`;
+    return { estado: { ...s, tentativas: { ...s.tentativas, [mat]: novo } }, erro };
+  }
+
+  // Simulação: outro aluno (fora do protótipo) reserva uma vaga.
+  function outroAlunoReserva(s, mod, data, hora) {
+    if (vagas(s, mod, data, hora) <= 0) return { estado: s, erro: 'Horário já está lotado.' };
+    const k = chave(mod, data, hora);
+    return { estado: { ...s, ajustes: { ...s.ajustes, [k]: (s.ajustes[k] || 0) + 1 } }, msg: 'Outro aluno reservou 1 vaga.' };
+  }
+
+  // Agenda completa (todos os horários das modalidades do aluno, mesmo indisponíveis).
+  function agenda(s, mat) {
+    const mods = modalidadesDoAluno(s, mat), comps = compromissos(s, mat);
+    return janela(s).map(data => {
+      const f = fechado(s, data);
+      const slots = mods.flatMap(mod => horariosGrade(s, mod, data).map(hora => {
+        const cap = capacidade(s, mod), oc = ocupadas(s, mod, data, hora), v = cap - oc;
+        const meu = comps.find(c => mesmo(c, { mod, data, hora }));
+        const passou = minutosAte(s, data, hora) < 0;
+        let situacao;
+        if (f) situacao = 'fechado'; // feriado/CT fechado: desativado, inclusive o treino do próprio aluno
+        else if (meu && meu.tipo === 'fixo') situacao = 'meu';
+        else if (meu && meu.tipo === 'remarcado') situacao = 'novo';
+        else if (meu && meu.tipo === 'liberado') situacao = 'liberado';
+        else if (meu && meu.tipo === 'cancelado') situacao = 'cancelado';
+        else if (passou || !respeitaAntecedencia(s, data, hora)) situacao = 'encerrado';
+        else if (v <= 0) situacao = 'lotado';
+        else situacao = 'disponivel';
+        return { mod, data, hora, capacidade: cap, ocupadas: oc, vagas: v, situacao, passou, remId: meu && meu.remId, meuTreino: !!meu && ativo(meu) };
+      })).sort((x, y) => x.hora.localeCompare(y.hora) || x.mod.localeCompare(y.mod));
+      return { data, diaSemana: diaSemana(data), fechado: f, slots };
+    }).filter(d => d.slots.length); // dias sem nenhuma modalidade do aluno não aparecem
+  }
+
+  return { modalidadesDoAluno, toMin, deMin, addDias, diaSemana, hoje, janela, aluno, vagas, ocupadas, capacidade, compromissos,
+           remarcacoesUsadas, cancelamentos, podeSair, podeCancelar, podeEntrar, outrosTreinosNoDia, cancelar, remarcar, desfazer, autenticar, outroAlunoReserva, agenda, mesmo };
+})();
+
+/* =====================================================================
+   DADOS FICTÍCIOS
+   ===================================================================== */
+function estadoInicial() {
+  return {
+    agora: Regras.toMin('2026-11-15', '09:00'), // domingo
+    config: { janelaDias: 15, antecedenciaHoras: 2, antecedenciaCancelamentoHoras: 0, limiteRemarcacoes: 3, maxTentativas: 5, bloqueioMin: 15 },
+    ct: {
+      modalidades: {
+        // 3 modalidades oficiais do CT (capacidades fictícias, a confirmar)
+        funcional:      { nome: 'Treinamento Funcional', curto: 'Funcional', capacidade: 12, cor: '#e0662b' },
+        cross:          { nome: 'Cross Trainer', curto: 'Cross', capacidade: 10, cor: '#c2185b' },
+        fortalecimento: { nome: 'Fortalecimento e Reabilitação Funcional', curto: 'Fortalec.', capacidade: 3, cor: '#2b8be0' },
+      },
+      diasFuncionamento: [1, 2, 3, 4, 5], // sem sábado e domingo
+      grade: [
+        { mod: 'funcional', dias: [1, 3, 5], horas: ['08:00', '19:00', '20:00'] },
+        { mod: 'cross', dias: [1, 2, 3, 4, 5], horas: ['06:00', '09:00', '17:00', '18:00', '20:00'] },
+        // cada aluno escolhe seus horários (padrão 2x/semana) — grade provisória: 06h às 20h, exceto 10h às 16h
+        { mod: 'fortalecimento', dias: [1, 2, 3, 4, 5], horas: ['06:00', '07:00', '08:00', '09:00', '16:00', '17:00', '18:00', '19:00', '20:00'] },
+      ],
+      fechados: [{ data: '2026-11-20', motivo: 'Feriado – Consciência Negra' }],
+    },
+    alunos: [
+      { matricula: '1024', codigo: 'BM7K3P', nome: 'Ana Souza',
+        treinos: [{ mod: 'funcional', dia: 1, hora: '19:00' }, { mod: 'funcional', dia: 3, hora: '19:00' }, { mod: 'funcional', dia: 5, hora: '19:00' }] },
+      { matricula: '1031', codigo: 'BM9Q2D', nome: 'Bruno Lima',
+        // 2 modalidades na matrícula do aluno
+        treinos: [{ mod: 'funcional', dia: 1, hora: '20:00' }, { mod: 'funcional', dia: 3, hora: '20:00' },
+                  { mod: 'fortalecimento', dia: 2, hora: '18:00' }, { mod: 'fortalecimento', dia: 4, hora: '18:00' }] },
+      { matricula: '1045', codigo: 'BM4X8L', nome: 'Carla Mendes',
+        treinos: [{ mod: 'funcional', dia: 1, hora: '08:00' }, { mod: 'funcional', dia: 3, hora: '08:00' }, { mod: 'funcional', dia: 5, hora: '08:00' }] },
+      { matricula: '1052', codigo: 'BM2W6R', nome: 'Diego Rocha',
+        treinos: [{ mod: 'cross', dia: 1, hora: '06:00' }, { mod: 'cross', dia: 3, hora: '06:00' }, { mod: 'cross', dia: 5, hora: '06:00' }] },
+      { matricula: '1060', codigo: 'BM5H3T', nome: 'Elisa Prado',
+        // Fortalecimento: horário individual escolhido na grade, 2x por semana (padrão provisório)
+        treinos: [{ mod: 'fortalecimento', dia: 1, hora: '07:00' }, { mod: 'fortalecimento', dia: 3, hora: '07:00' }] },
+    ],
+    // ocupação fixa de "outros alunos" em horários usados nos cenários
+    baseFixa: {
+      'funcional|2026-11-16|19:00': 11, // com a Ana: 12/12 (lotado)
+      'funcional|2026-11-16|08:00': 5,
+      'funcional|2026-11-18|08:00': 6,
+      'funcional|2026-11-18|19:00': 7,
+      'funcional|2026-11-18|20:00': 12, // lotado
+      'fortalecimento|2026-11-16|20:00': 3, // lotado
+      'fortalecimento|2026-11-16|17:00': 1,
+    },
+    ajustes: {}, remarcacoes: [], seq: 0, tentativas: {},
+  };
+}
+
+/* =====================================================================
+   PÁGINA (casca descartável)
+   ===================================================================== */
+let S = estadoInicial();
+let ui = novaUI();
+let logEventos = [];
+let cenario = { idx: null, passo: 0 };
+function novaUI() { return { mat: null, origem: null, acao: null, cancelar: null, confirmar: null, toast: null, modoRecepcao: false, prefill: { m: '', c: '' } }; }
+
+const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+const DIAS_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+const fmtData = d => `${DIAS[Regras.diaSemana(d)]} ${d.slice(8, 10)}/${d.slice(5, 7)}`;
+const fmtRef = r => `${fmtData(r.data)} · ${r.hora}`;
+const fmtRefM = r => `${S.ct.modalidades[r.mod].nome} ${fmtRef(r)}`;
+const fmtAgora = () => { const x = Regras.deMin(S.agora); return `${fmtData(x.data)} ${x.hora}`; };
+const nomeMod = m => S.ct.modalidades[m].nome;
+const curtoMod = m => S.ct.modalidades[m].curto;
+const corMod = m => S.ct.modalidades[m].cor;
+const $ = s => document.querySelector(s);
+const chaveRef = r => `${r.mod}|${r.data}|${r.hora}`;
+const ref3 = r => ({ mod: r.mod, data: r.data, hora: r.hora });
+
+function log(tipo, texto) { logEventos.unshift({ quando: fmtAgora(), tipo, texto }); }
+let toastTimer;
+function toast(texto, tipo = '') {
+  ui.toast = { texto, tipo }; clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { ui.toast = null; render(); }, 4500);
+}
+
+/* ---------- ações (usadas pelos toques e pelos cenários) ---------- */
+function fazerLogin(m, c) {
+  ui.prefill = { m, c };
+  const r = Regras.autenticar(S, m, c); S = r.estado;
+  if (r.erro) { toast(r.erro, 'erro'); log('erro', `Login ${m}: ${r.erro}`); }
+  else { ui.mat = r.aluno.matricula; ui.origem = null; log('ok', `${r.aluno.nome} entrou`); }
+  render();
+}
+function sair() { if (ui.mat) log('', `${Regras.aluno(S, ui.mat).nome} saiu`); ui.mat = null; ui.origem = null; ui.acao = null; ui.cancelar = null; ui.confirmar = null; ui.prefill = { m: '', c: '' }; render(); }
+
+function tocarSlot(ref) {
+  if (ui.modoRecepcao) {
+    const r = Regras.outroAlunoReserva(S, ref.mod, ref.data, ref.hora); S = r.estado;
+    log(r.erro ? 'erro' : 'ok', `Recepção · ${nomeMod(ref.mod)} ${fmtRef(ref)}: ${r.erro || r.msg}`);
+    toast(r.erro || r.msg, r.erro ? 'erro' : ''); return render();
+  }
+  const slot = Regras.agenda(S, ui.mat).flatMap(d => d.slots).find(x => Regras.mesmo(x, ref));
+  if (!slot || slot.situacao === 'fechado') { toast('CT fechado neste dia (feriado). Este horário não pode ser remarcado nem cancelado.'); return render(); }
+  const meu = slot.situacao === 'meu' || slot.situacao === 'novo';
+
+  if (ui.origem && Regras.mesmo(ui.origem, ref)) { // horário de origem não pode ser destino
+    const motivo = 'Este já é o horário atual do seu treino. Escolha outro horário em verde.';
+    toast(motivo, 'erro'); log('erro', `Não pode ir para ${fmtRef(ref)}: ${motivo}`); return render();
+  }
+
+  if (meu) {
+    if (ui.origem) { // já escolhendo destino: tocar em outro treino seu troca a origem
+      const r = Regras.podeSair(S, ui.mat, ref);
+      if (!r.ok) { toast(r.motivo, 'erro'); return render(); }
+      ui.origem = ref3(ref); return render();
+    }
+    const sairOk = Regras.podeSair(S, ui.mat, ref), cancOk = Regras.podeCancelar(S, ui.mat, ref);
+    if (!sairOk.ok && !cancOk.ok) { toast(sairOk.motivo, 'erro'); log('erro', `Treino ${fmtRefM(ref)}: ${sairOk.motivo}`); return render(); }
+    ui.acao = { ref: ref3(ref), sair: sairOk, canc: cancOk };
+    return render();
+  }
+  if (!ui.origem) {
+    const txt = {
+      disponivel: `${slot.vagas} vaga(s) de ${slot.capacidade}. Para usar, toque primeiro no treino que você quer trocar.`,
+      liberado: `Você liberou este horário. ${slot.vagas} vaga(s) de ${slot.capacidade}.`,
+      cancelado: `Você cancelou este treino. Para voltar, use "Desfazer" em Minhas alterações.`,
+      lotado: `Lotado: ${slot.capacidade} de ${slot.capacidade} vagas ocupadas.`,
+      encerrado: slot.passou ? 'Este horário já passou.' : `Fora do prazo: remarcações precisam de ${S.config.antecedenciaHoras}h de antecedência.`,
+      fechado: 'CT fechado neste dia.',
+    }[slot.situacao];
+    toast(txt); return render();
+  }
+  const r = Regras.podeEntrar(S, ui.mat, ui.origem, ref);
+  if (!r.ok) { toast(r.motivo, 'erro'); log('erro', `Não pode ir para ${fmtRef(ref)}: ${r.motivo}`); return render(); }
+  ui.confirmar = { de: ui.origem, para: ref3(ref), outros: Regras.outrosTreinosNoDia(S, ui.mat, ui.origem, ref.data), cancelarTambem: [] };
+  render();
+}
+function escolherRemarcar() {
+  if (!ui.acao) return;
+  if (!ui.acao.sair.ok) { toast(ui.acao.sair.motivo, 'erro'); log('erro', `Remarcar ${fmtRefM(ui.acao.ref)}: ${ui.acao.sair.motivo}`); ui.acao = null; return render(); }
+  ui.origem = ui.acao.ref; ui.acao = null;
+  log('', `Escolheu remarcar ${fmtRefM(ui.origem)}`); render();
+}
+function escolherCancelar() {
+  if (!ui.acao) return;
+  if (!ui.acao.canc.ok) { toast(ui.acao.canc.motivo, 'erro'); ui.acao = null; return render(); }
+  ui.cancelar = ui.acao.ref; ui.acao = null; render();
+}
+function fecharAcao() { ui.acao = null; ui.cancelar = null; render(); }
+function confirmarCancelamento() {
+  if (!ui.cancelar) return;
+  const ref = ui.cancelar, r = Regras.cancelar(S, ui.mat, ref); S = r.estado;
+  toast(r.erro || `${r.msg} ${fmtRefM(ref)}`, r.erro ? 'erro' : 'ok');
+  log(r.erro ? 'erro' : 'ok', `${Regras.aluno(S, ui.mat).nome}: cancelou ${fmtRefM(ref)}${r.erro ? ' — ' + r.erro : ''}`);
+  ui.cancelar = null; render();
+}
+function marcarOutro(chave, cancelarEste) {
+  if (!ui.confirmar) return;
+  const lista = ui.confirmar.cancelarTambem.filter(k => k !== chave);
+  ui.confirmar.cancelarTambem = cancelarEste ? [...lista, chave] : lista;
+  render();
+}
+function confirmar() {
+  if (!ui.confirmar) return;
+  const { de, para, outros, cancelarTambem } = ui.confirmar;
+  const refs = outros.filter(o => cancelarTambem.includes(chaveRef(o))).map(ref3);
+  const r = Regras.remarcar(S, ui.mat, de, para, refs); S = r.estado;
+  if (r.erro) { toast(r.erro, 'erro'); log('erro', r.erro); }
+  else {
+    const extra = refs.length ? ` · cancelou também ${refs.map(fmtRefM).join(', ')}` : (outros.length ? ' · manteve o outro treino do dia' : '');
+    toast(`${r.msg} ${fmtRefM(de)} → ${fmtRefM(para)}`, 'ok');
+    log('ok', `${Regras.aluno(S, ui.mat).nome}: ${fmtRefM(de)} → ${fmtRefM(para)}${extra}`);
+  }
+  ui.confirmar = null; ui.origem = null; render();
+}
+// usado pelos cenários: tocar no próprio treino e escolher "Remarcar"
+function remarcarTreino(ref) { tocarSlot(ref); if (ui.acao) escolherRemarcar(); }
+function cancelarConfirmacao() { ui.confirmar = null; render(); }
+function desfazer(id) {
+  const r = Regras.desfazer(S, ui.mat, id); S = r.estado;
+  toast(r.erro || r.msg, r.erro ? 'erro' : 'ok'); log(r.erro ? 'erro' : 'ok', `Desfazer #${id}: ${r.erro || r.msg}`); render();
+}
+function desfazerUltima() {
+  const r = [...S.remarcacoes].reverse().find(x => x.matricula === ui.mat && x.status === 'ativa');
+  if (r) desfazer(r.id);
+}
+function avancar(min) { S = { ...S, agora: S.agora + min }; ui.origem = null; log('', `Relógio avançou para ${fmtAgora()}`); render(); }
+function definirRelogio(data, hora) { S = { ...S, agora: Regras.toMin(data, hora) }; log('', `Relógio ajustado para ${fmtAgora()}`); render(); }
+function definirRegra(k, v) { S = { ...S, config: { ...S.config, [k]: v } }; ui.origem = null; log('', `Regra alterada: ${k} = ${v}`); render(); }
+function recomecar() { S = estadoInicial(); ui = novaUI(); logEventos = []; render(); }
+
+/* ---------- cenários guiados ---------- */
+const R = (mod, data, hora) => ({ mod, data, hora });
+const CENARIOS = [
+  { titulo: 'Caminho feliz',
+    texto: 'Ana treina só Treinamento Funcional, seg/qua/sex às 19:00. Ela não poderá ir na segunda (16/11) e remarca para quarta (18/11) às 08:00.',
+    obs: 'Ao tocar no treino, o app pergunta: Remarcar ou Cancelar. Como Ana já treina na quarta às 19:00, a confirmação pergunta se ela quer manter esse treino; o padrão é Manter. Depois, veja a segunda 19:00 ficar tracejada e o contador ir para 1 de 3.',
+    passos: [
+      ['Entrar como Ana (1024 / BM7K3P)', () => fazerLogin('1024', 'BM7K3P')],
+      ['Tocar no treino de seg 16/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-16', '19:00'))],
+      ['Escolher "Remarcar"', () => escolherRemarcar()],
+      ['Tocar em qua 18/11 · 08:00 (verde)', () => tocarSlot(R('funcional', '2026-11-18', '08:00'))],
+      ['Confirmar (mantendo o treino de qua 19:00)', () => confirmar()],
+    ] },
+  { titulo: 'Remarcar e cancelar o outro do dia',
+    texto: 'Ana remarca a segunda 19:00 para quarta 08:00. Como na quarta ela já tem treino às 19:00, decide cancelar esse e treinar só de manhã.',
+    obs: 'Numa só confirmação: segunda 19:00 liberada, quarta 08:00 ocupada e quarta 19:00 cancelada. Conta 1 remarcação + 1 cancelamento.',
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Remarcar o treino de seg 16/11 · 19:00', () => remarcarTreino(R('funcional', '2026-11-16', '19:00'))],
+      ['Tocar em qua 18/11 · 08:00', () => tocarSlot(R('funcional', '2026-11-18', '08:00'))],
+      ['Marcar "Cancelar" no treino de qua 18/11 · 19:00', () => marcarOutro('funcional|2026-11-18|19:00', true)],
+      ['Confirmar', () => confirmar()],
+    ] },
+  { titulo: 'Cancelar treino',
+    texto: 'Ana não vai conseguir ir na segunda 19:00 (turma lotada) e só cancela, sem escolher outro horário.',
+    obs: 'A vaga volta para a turma (12/12 → 11/12). O contador de remarcações não muda; o de cancelamentos vai para 1. Depois ela desfaz, porque a vaga ainda está livre.',
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Tocar no treino de seg 16/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-16', '19:00'))],
+      ['Escolher "Cancelar"', () => escolherCancelar()],
+      ['Confirmar cancelamento', () => confirmarCancelamento()],
+      ['Ana toca em "Desfazer"', () => desfazerUltima()],
+    ] },
+  { titulo: 'Mesmo dia, outro horário',
+    texto: 'Ana troca apenas o horário: quarta 18/11 às 19:00 → quarta às 08:00. Antes ela tenta 20:00, que está lotado.',
+    obs: 'Horário lotado aparece (transparência), mas não aceita. Como a troca é no mesmo dia, o treino que está sendo trocado não entra na pergunta de "outro treino do dia".',
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Remarcar o treino de qua 18/11 · 19:00', () => remarcarTreino(R('funcional', '2026-11-18', '19:00'))],
+      ['Tentar qua 18/11 · 20:00 (lotado)', () => tocarSlot(R('funcional', '2026-11-18', '20:00'))],
+      ['Tocar em qua 18/11 · 08:00', () => tocarSlot(R('funcional', '2026-11-18', '08:00'))],
+      ['Confirmar', () => confirmar()],
+    ] },
+  { titulo: 'Em cima da hora',
+    texto: 'São 17:30 de segunda. Ana não vai conseguir ir ao treino das 19:00 (falta 1h30; remarcar exige 2h).',
+    obs: '"Remarcar" aparece desativado com o motivo, mas "Cancelar" continua disponível (por padrão, até o início da aula). Melhor liberar a vaga do que faltar sem avisar. Teste mudar as antecedências no painel.',
+    setup: () => { S.agora = Regras.toMin('2026-11-16', '17:30'); },
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Tocar no treino de seg 16/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-16', '19:00'))],
+      ['Escolher "Cancelar"', () => escolherCancelar()],
+      ['Confirmar cancelamento', () => confirmarCancelamento()],
+    ] },
+  { titulo: 'Desfazer sem vaga',
+    texto: 'Ana sai da segunda 19:00 (que estava lotada). Outro aluno pega a vaga liberada. Ana se arrepende e tenta desfazer.',
+    obs: 'Desfazer não é garantido: a vaga liberada vira de qualquer um. É isso que o CT quer?',
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Remarcar o treino de seg 16/11 · 19:00', () => remarcarTreino(R('funcional', '2026-11-16', '19:00'))],
+      ['Tocar em qua 18/11 · 08:00', () => tocarSlot(R('funcional', '2026-11-18', '08:00'))],
+      ['Confirmar', () => confirmar()],
+      ['Outro aluno reserva a vaga de seg 19:00', () => { const r = Regras.outroAlunoReserva(S, 'funcional', '2026-11-16', '19:00'); S = r.estado; log('ok', 'Outro aluno reservou seg 16/11 19:00'); render(); }],
+      ['Ana toca em "Desfazer"', () => desfazerUltima()],
+    ] },
+  { titulo: 'Uma vaga, dois alunos',
+    texto: 'Carla (Funcional seg/qua/sex 08:00) quer passar a segunda para as 19:00, que está lotada. Ana cancela o treino dela; Carla então consegue.',
+    obs: 'A vaga liberada por um cancelamento fica imediatamente disponível para os outros.',
+    passos: [
+      ['Entrar como Carla (1045 / BM4X8L)', () => fazerLogin('1045', 'BM4X8L')],
+      ['Remarcar o treino de seg 16/11 · 08:00', () => remarcarTreino(R('funcional', '2026-11-16', '08:00'))],
+      ['Tentar seg 16/11 · 19:00 (lotado)', () => tocarSlot(R('funcional', '2026-11-16', '19:00'))],
+      ['Sair', () => sair()],
+      ['Entrar como Ana e cancelar seg 16/11 · 19:00', () => { fazerLogin('1024', 'BM7K3P'); tocarSlot(R('funcional', '2026-11-16', '19:00')); escolherCancelar(); confirmarCancelamento(); }],
+      ['Sair', () => sair()],
+      ['Entrar como Carla e remarcar seg 16/11 · 08:00', () => { fazerLogin('1045', 'BM4X8L'); remarcarTreino(R('funcional', '2026-11-16', '08:00')); }],
+      ['Tocar em seg 16/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-16', '19:00'))],
+      ['Confirmar', () => confirmar()],
+    ] },
+  { titulo: 'Outra modalidade',
+    texto: 'Bruno tem 2 modalidades em sua matrícula: Treinamento Funcional (seg/qua 20:00) e Fortalecimento e Reabilitação Funcional (ter/qui 18:00). Ele troca o Fortalecimento de terça 17/11 pelo Funcional de quarta 18/11 às 19:00 — e na quarta ele já tem Funcional às 20:00.',
+    obs: 'Ficam verdes os horários vagos das DUAS modalidades dele; Cross Trainer não aparece. Na confirmação, ele escolhe manter o treino das 20:00 e fica com dois treinos na quarta.',
+    passos: [
+      ['Entrar como Bruno (1031 / BM9Q2D)', () => fazerLogin('1031', 'BM9Q2D')],
+      ['Remarcar o Fortalecimento de ter 17/11 · 18:00', () => remarcarTreino(R('fortalecimento', '2026-11-17', '18:00'))],
+      ['Tocar no Funcional de qua 18/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-18', '19:00'))],
+      ['Confirmar (mantendo qua 20:00)', () => confirmar()],
+      ['Remarcar o Funcional de seg 16/11 · 20:00', () => remarcarTreino(R('funcional', '2026-11-16', '20:00'))],
+      ['Tentar o Fortalecimento de seg 16/11 · 20:00 (lotado)', () => tocarSlot(R('fortalecimento', '2026-11-16', '20:00'))],
+      ['Tocar no Fortalecimento de seg 16/11 · 17:00', () => tocarSlot(R('fortalecimento', '2026-11-16', '17:00'))],
+      ['Confirmar', () => confirmar()],
+    ] },
+  { titulo: 'Feriado',
+    texto: 'Sexta 20/11 é feriado. Ana tem treino fixo nesse dia às 19:00.',
+    obs: 'Todos os horários do dia ficam desativados, inclusive o treino da Ana ("Seu treino · feriado"): não dá para remarcar, cancelar nem escolher o feriado como destino.',
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Tentar tocar no treino de sex 20/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-20', '19:00'))],
+      ['Remarcar o treino de qua 18/11 · 19:00', () => remarcarTreino(R('funcional', '2026-11-18', '19:00'))],
+      ['Tentar sex 20/11 · 08:00 como destino', () => tocarSlot(R('funcional', '2026-11-20', '08:00'))],
+    ] },
+  { titulo: 'Limite de remarcações',
+    texto: 'Regra ajustada para 1 remarcação a cada 15 dias. Ana remarca uma vez e tenta de novo.',
+    obs: 'Na segunda tentativa, "Remarcar" fica desativado com o motivo, mas "Cancelar" segue disponível (cancelamento não conta no limite). Alterar a remarcação já feita continua permitido.',
+    setup: () => { S.config.limiteRemarcacoes = 1; },
+    passos: [
+      ['Entrar como Ana', () => fazerLogin('1024', 'BM7K3P')],
+      ['Remarcar seg 16/11 19:00 → qua 18/11 08:00', () => { remarcarTreino(R('funcional', '2026-11-16', '19:00')); tocarSlot(R('funcional', '2026-11-18', '08:00')); confirmar(); }],
+      ['Tocar no treino de qua 18/11 · 19:00', () => tocarSlot(R('funcional', '2026-11-18', '19:00'))],
+      ['Voltar', () => fecharAcao()],
+      ['Trocar o destino: remarcar qua 18/11 · 08:00', () => remarcarTreino(R('funcional', '2026-11-18', '08:00'))],
+      ['Tocar em seg 16/11 · 08:00', () => tocarSlot(R('funcional', '2026-11-16', '08:00'))],
+      ['Confirmar', () => confirmar()],
+    ] },
+  { titulo: 'Código errado',
+    texto: 'Alguém tenta adivinhar o código de acesso da matrícula 1024.',
+    obs: 'A mensagem não diz se a matrícula existe. Após 5 erros, bloqueia por 15 min (no relógio simulado).',
+    passos: [
+      ['Tentar código AAAAAA', () => fazerLogin('1024', 'AAAAAA')],
+      ['Tentar BBBBBB', () => fazerLogin('1024', 'BBBBBB')],
+      ['Tentar CCCCCC', () => fazerLogin('1024', 'CCCCCC')],
+      ['Tentar DDDDDD', () => fazerLogin('1024', 'DDDDDD')],
+      ['Tentar EEEEEE (5ª)', () => fazerLogin('1024', 'EEEEEE')],
+      ['Tentar o código certo (ainda bloqueado)', () => fazerLogin('1024', 'BM7K3P')],
+      ['Avançar 15 minutos', () => avancar(15)],
+      ['Tentar o código certo', () => fazerLogin('1024', 'BM7K3P')],
+    ] },
+];
+function iniciarCenario(i) {
+  recomecar();
+  cenario = { idx: i, passo: 0 };
+  if (CENARIOS[i].setup) CENARIOS[i].setup();
+  log('', `Cenário: ${CENARIOS[i].titulo}`);
+  render();
+}
+function rodarPasso(j) {
+  if (j !== cenario.passo) return;
+  cenario.passo++;
+  CENARIOS[cenario.idx].passos[j][1]();
+  render();
+}
+
+/* ---------- render ---------- */
+function render() { renderApp(); renderPainel(); }
+
+function renderApp() {
+  const screen = $('#screen');
+  $('#brandRight').innerHTML = ui.mat ? `<button class="link" data-act="sair">Sair</button>` : '';
+  if (!ui.mat) {
+    screen.innerHTML = `
+      <form class="login" id="formLogin">
+        <h2>Minha agenda</h2>
+        <p>Remarque ou cancele seus treinos dos próximos ${S.config.janelaDias} dias.</p>
+        <label class="field"><span>Matrícula</span><input name="m" inputmode="numeric" autocomplete="username" value="${ui.prefill.m}"></label>
+        <label class="field"><span>Código de acesso (fornecido pelo CT)</span><input name="c" autocomplete="current-password" value="${ui.prefill.c}" style="text-transform:uppercase"></label>
+        <button class="btn" type="submit">Entrar</button>
+        <div class="hint">Demonstração: Ana <b>1024 / BM7K3P</b> · Bruno <b>1031 / BM9Q2D</b> (Funcional + Fortalecimento) · Carla <b>1045 / BM4X8L</b> · Diego <b>1052 / BM2W6R</b> (Cross Trainer) · Elisa <b>1060 / BM5H3T</b> (Fortalecimento 2x/sem)</div>
+      </form>`;
+    renderOverlay(); return;
+  }
+  const a = Regras.aluno(S, ui.mat);
+  const mods = [...new Set(a.treinos.map(t => t.mod))];
+  const plano = mods.map(m => `${nomeMod(m)}: ` + a.treinos.filter(t => t.mod === m).map(t => `${DIAS[t.dia]} ${t.hora}`).join(', ')).join(' · ');
+  const usadas = Regras.remarcacoesUsadas(S, ui.mat), lim = S.config.limiteRemarcacoes;
+  const ag = Regras.agenda(S, ui.mat);
+  const hoje = Regras.hoje(S);
+
+  const dias = ag.map(d => {
+    const slots = d.slots.map(sl => {
+      let alvo = false, dim = false;
+      if (ui.origem) {
+        const ok = Regras.podeEntrar(S, ui.mat, ui.origem, sl).ok;
+        alvo = ok; dim = !ok && !Regras.mesmo(sl, ui.origem);
+      }
+      const st = {
+        meu: sl.passou ? 'Realizado' : 'Seu treino',
+        novo: sl.passou ? 'Realizado' : 'Remarcado ✓',
+        liberado: `Liberado · ${sl.vagas} vaga${sl.vagas === 1 ? '' : 's'}`,
+        cancelado: 'Cancelado',
+        disponivel: `${sl.vagas} vaga${sl.vagas === 1 ? '' : 's'}`,
+        lotado: 'Lotado',
+        encerrado: sl.passou ? 'Encerrado' : 'Prazo encerrado',
+        fechado: sl.meuTreino ? 'Seu treino · feriado' : 'CT fechado',
+      }[sl.situacao];
+      const sel = ui.origem && Regras.mesmo(sl, ui.origem);
+      return `<button class="slot s-${sl.situacao} ${sl.passou ? 'passou' : ''} ${sel ? 'sel' : ''} ${alvo ? 'alvo' : ''} ${dim ? 'dim' : ''}"
+                style="--modc:${corMod(sl.mod)}" data-act="slot" ${sl.situacao === 'fechado' ? 'disabled' : ''} data-mod="${sl.mod}" data-data="${sl.data}" data-hora="${sl.hora}"
+                title="${nomeMod(sl.mod)} · ${sl.ocupadas}/${sl.capacidade} ocupadas">
+                <span class="h">${sl.hora}</span>
+                <span class="m">${curtoMod(sl.mod)}</span>
+                <span class="st">${sel ? 'Trocando…' : alvo ? + sl.vagas + (sl.vagas === 1 ? ' vaga livre' : ' vagas livres') : st}</span>
+              </button>`;
+    }).join('');
+    return `<section class="dia ${d.data === hoje ? 'hoje' : ''}">
+      <h3>${DIAS_LONGO[d.diaSemana]}, ${d.data.slice(8, 10)}/${d.data.slice(5, 7)} <small>${d.data === hoje ? 'hoje' : ''}</small></h3>
+      ${d.fechado ? `<div class="fechadoAviso">CT fechado · ${d.fechado.motivo}</div>` : ''}
+      <div class="slots">${slots}</div>
+    </section>`;
+  }).join('');
+
+  const minhas = S.remarcacoes.filter(r => r.matricula === ui.mat);
+  const lista = minhas.length ? `<div class="remList"><h3>Minhas alterações</h3>${minhas.slice().reverse().map(r => `
+      <div class="rem ${r.status}">
+        <span>${fmtRefM(r.de)}<br>${r.para ? `→ <b>${fmtRefM(r.para)}</b>` : '<b style="color:var(--full)">Cancelado</b>'}</span>
+        ${r.status === 'ativa' ? `<button data-act="desfazer" data-id="${r.id}">Desfazer</button>` : '<span>desfeita</span>'}
+      </div>`).join('')}</div>` : '';
+
+  screen.innerHTML = `
+    <div class="ola"><h2>Olá, ${a.nome.split(' ')[0]}</h2><div class="plano">Matrícula ${a.matricula} · ${plano}</div></div>
+    <div class="contador">Remarcações nos próximos ${S.config.janelaDias} dias: <b>${usadas} de ${lim === Infinity ? '∞' : lim}</b>
+      · cancelamentos: <b>${Regras.cancelamentos(S, ui.mat)}</b> · antecedência mínima de ${S.config.antecedenciaHoras}h</div>
+    <div class="legenda">
+      <span><i style="background:var(--accent)"></i>Seu treino</span>
+      <span><i style="background:#fff;border:1px dashed var(--accent)"></i>Você liberou</span>
+      <span><i style="background:#fff;border:1px dashed var(--full)"></i>Cancelado</span>
+      <span><i style="background:#fff;border:1px solid var(--line)"></i>Disponível</span>
+      <span><i style="background:var(--full-soft)"></i>Lotado</span>
+      <span><i style="background:var(--off-soft)"></i>Encerrado / fechado</span>
+    </div>
+    <div class="muted" style="padding:2px 18px;font-size:12px">${ui.origem ? '' : 'Toque no seu treino para remarcar ou cancelar.'}</div>
+    ${dias}
+    ${lista}`;
+  renderOverlay();
+}
+
+function renderOverlay() {
+  let html = '';
+  if (ui.mat && ui.origem && !ui.confirmar) {
+    const n = Regras.agenda(S, ui.mat).flatMap(d => d.slots).filter(sl => Regras.podeEntrar(S, ui.mat, ui.origem, sl).ok).length;
+    html += `<div class="barra"><span>Trocando <b>${fmtRef(ui.origem)}</b><br>${n} horário(s) disponível(is) em verde</span><button data-act="cancelarOrigem">Cancelar</button></div>`;
+  }
+  if (ui.modoRecepcao) html += `<div class="barra" style="background:var(--warn)"><span>Modo recepção ligado: tocar num horário = outro aluno reserva 1 vaga</span></div>`;
+  if (ui.toast) html += `<div class="toast ${ui.toast.tipo}">${ui.toast.texto}</div>`;
+  if (ui.acao) {
+    const { ref, sair, canc } = ui.acao;
+    html += `<div class="modal"><div class="sheet">
+      <h3>${nomeMod(ref.mod)}</h3>
+      <div class="muted" style="margin:-6px 0 14px">${fmtRef(ref)} · o que você quer fazer?</div>
+      <div class="opcoes">
+        <button class="btn" data-act="escolherRemarcar" ${sair.ok ? '' : 'disabled'}>Remarcar · trocar dia ou horário</button>
+        ${sair.ok ? '' : `<div class="motivo">${sair.motivo}</div>`}
+        <button class="btn perigo" data-act="escolherCancelar" ${canc.ok ? '' : 'disabled'}>Cancelar · não vou conseguir ir</button>
+        ${canc.ok ? '' : `<div class="motivo">${canc.motivo}</div>`}
+        <button class="btn sec" data-act="fecharAcao">Voltar</button>
+      </div>
+    </div></div>`;
+  }
+  if (ui.cancelar) {
+    const ref = ui.cancelar;
+    html += `<div class="modal"><div class="sheet">
+      <h3>Cancelar treino?</h3>
+      <div class="troca" style="grid-template-columns:1fr"><div><small>Não vou · ${nomeMod(ref.mod)}</small>${fmtRef(ref)}</div></div>
+      <p class="muted" style="margin:-4px 0 16px;font-size:13px">A vaga fica livre para outros alunos. Cancelar não conta como remarcação.</p>
+      <div class="acoes"><button class="btn sec" data-act="fecharAcao">Voltar</button><button class="btn perigo" data-act="confirmarCancelamento">Cancelar treino</button></div>
+    </div></div>`;
+  }
+  if (ui.confirmar) {
+    const { de, para, outros, cancelarTambem } = ui.confirmar;
+    const blocoOutros = outros.length ? `<div class="outros"><b>Você também tem treino neste dia.</b> Quer manter?
+      ${outros.map(o => { const k = chaveRef(o), canc = cancelarTambem.includes(k); return `<div class="outro">
+        <span>${nomeMod(o.mod)}<br>${fmtRef(o)}</span>
+        ${o.cancelavel.ok ? `<div class="seg"><button class="${canc ? '' : 'on'}" data-act="outro" data-k="${k}" data-v="manter">Manter</button><button class="${canc ? 'on canc' : ''}" data-act="outro" data-k="${k}" data-v="cancelar">Cancelar</button></div>`
+                          : `<span class="muted" style="font-size:12px">Mantido (${o.cancelavel.motivo})</span>`}
+      </div>`; }).join('')}</div>` : '';
+    html += `<div class="modal"><div class="sheet">
+      <h3>Confirmar remarcação</h3>
+      ${de.mod !== para.mod ? `<div class="muted" style="margin:-6px 0 12px">Troca de modalidade: ${nomeMod(de.mod)} → ${nomeMod(para.mod)}</div>` : ''}
+      <div class="troca">
+        <div><small>Não vou · ${nomeMod(de.mod)}</small>${fmtRef(de)}</div><span>→</span>
+        <div style="border-color:var(--ok)"><small>Vou · ${nomeMod(para.mod)}</small><b>${fmtRef(para)}</b></div>
+      </div>
+      ${blocoOutros}
+      <div class="acoes"><button class="btn sec" data-act="cancelarConf">Voltar</button><button class="btn" data-act="confirmar">Confirmar</button></div>
+    </div></div>`;
+  }
+  $('#overlay').innerHTML = html;
+}
+
+function renderPainel() {
+  const a = ui.mat && Regras.aluno(S, ui.mat);
+  const c = cenario.idx !== null ? CENARIOS[cenario.idx] : null;
+  const opt = (vals, atual, fmt = v => v) => vals.map(v => `<option value="${v}" ${v === atual ? 'selected' : ''}>${fmt(v)}</option>`).join('');
+  const t = S.tentativas;
+  $('#painel').innerHTML = `
+    <div class="box">
+      <h2>Cenários guiados</h2>
+      <div class="tabs">${CENARIOS.map((x, i) => `<button class="chip ${cenario.idx === i ? 'on' : ''}" data-act="cenario" data-i="${i}">${x.titulo}</button>`).join('')}</div>
+      ${c ? `<div class="cen"><p>${c.texto}</p><div class="obs"><b>Observe:</b> ${c.obs}</div>
+        <div class="passos">${c.passos.map((p, j) => `<button class="passo ${j < cenario.passo ? 'feito' : ''} ${j === cenario.passo ? 'prox' : ''}"
+          data-act="passo" data-j="${j}" ${j !== cenario.passo ? 'disabled' : ''}>${j + 1}. ${p[0]}</button>`).join('')}</div>
+        ${cenario.passo >= c.passos.length ? '<p class="muted" style="margin-top:8px">Cenário concluído. Continue explorando livremente no app.</p>' : ''}
+      </div>` : '<p class="muted" style="margin:0">Escolha um cenário — ele recomeça tudo do zero e mostra os passos. Ou use o app à esquerda livremente.</p>'}
+    </div>
+
+    <div class="grid2">
+      <div class="box">
+        <h2>Bastidor</h2>
+        <dl class="kv">
+          <dt>Agora</dt><dd><b>${fmtAgora()}</b></dd>
+          <dt>Janela</dt><dd>${fmtData(Regras.janela(S)[0])} até ${fmtData(Regras.janela(S).at(-1))}</dd>
+          <dt>Aluno no app</dt><dd>${a ? `${a.nome} (${a.matricula})` : '—'}</dd>
+        </dl>
+        <div class="row" style="margin-top:10px">
+          <button class="chip" data-act="avancar" data-min="60">+1 hora</button>
+          <button class="chip" data-act="avancar" data-min="360">+6 horas</button>
+          <button class="chip" data-act="avancar" data-min="1440">+1 dia</button>
+          <button class="chip" data-act="recomecar">Recomeçar tudo</button>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <label>Antecedência p/ remarcar <select data-act="regra" data-k="antecedenciaHoras">${opt([0, 1, 2, 6, 12, 24], S.config.antecedenciaHoras, v => v + 'h')}</select></label>
+          <label>Antecedência p/ cancelar <select data-act="regra" data-k="antecedenciaCancelamentoHoras">${opt([0, 1, 2, 6, 12, 24], S.config.antecedenciaCancelamentoHoras, v => v ? v + 'h' : 'até o início')}</select></label>
+          <label>Limite <select data-act="regra" data-k="limiteRemarcacoes">${opt([1, 2, 3, 5, Infinity], S.config.limiteRemarcacoes, v => v === Infinity ? 'sem limite' : v)}</select></label>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="chip ${ui.modoRecepcao ? 'on' : ''}" data-act="recepcao">Modo recepção ${ui.modoRecepcao ? 'ligado' : 'desligado'}</button>
+          <span class="muted" style="font-size:12px">simula outros alunos ocupando vagas</span>
+        </div>
+      </div>
+
+      <div class="box">
+        <h2>O que aconteceu</h2>
+        <div class="log">${logEventos.length ? logEventos.map((e, i) => `<div class="${e.tipo}">${i === 0 ? '<span class="novo-flag">último</span> ' : ''}<span class="muted">${e.quando}</span> · ${e.texto}</div>`).join('') : '<span class="muted">Nada ainda.</span>'}</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>Alterações registradas (todos os alunos)</h2>
+      ${S.remarcacoes.length ? `<table><tr><th>#</th><th>Aluno</th><th>Tipo</th><th>Não vai</th><th>Vai</th><th>Situação</th></tr>
+        ${S.remarcacoes.map(r => `<tr><td>${r.id}</td><td>${Regras.aluno(S, r.matricula).nome}</td><td>${r.para ? 'remarcação' : 'cancelamento'}</td>
+          <td>${fmtRefM(r.de)} <span class="muted">(${Regras.ocupadas(S, r.de.mod, r.de.data, r.de.hora)}/${Regras.capacidade(S, r.de.mod)})</span></td>
+          <td>${r.para ? `${fmtRefM(r.para)} <span class="muted">(${Regras.ocupadas(S, r.para.mod, r.para.data, r.para.hora)}/${Regras.capacidade(S, r.para.mod)})</span>` : '—'}</td>
+          <td>${r.status}</td></tr>`).join('')}</table>` : '<span class="muted">Nenhuma ainda.</span>'}
+      <p class="muted" style="font-size:12px;margin:8px 0 0">Entre parênteses: ocupação atual do horário (ocupadas/capacidade).</p>
+    </div>
+
+    <div class="box">
+      <h2>Tentativas de acesso</h2>
+      ${Object.keys(t).length ? `<table><tr><th>Matrícula</th><th>Falhas seguidas</th><th>Bloqueado até</th></tr>
+        ${Object.entries(t).map(([m, x]) => `<tr><td>${m}</td><td>${x.falhas}</td><td>${x.bloqueadoAte > S.agora ? (() => { const d = Regras.deMin(x.bloqueadoAte); return fmtData(d.data) + ' ' + d.hora; })() : '—'}</td></tr>`).join('')}</table>`
+        : '<span class="muted">Nenhuma tentativa registrada.</span>'}
+    </div>`;
+}
+
+/* ---------- eventos ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'slot') tocarSlot({ mod: b.dataset.mod, data: b.dataset.data, hora: b.dataset.hora });
+  else if (act === 'sair') sair();
+  else if (act === 'cancelarOrigem') { ui.origem = null; render(); }
+  else if (act === 'confirmar') confirmar();
+  else if (act === 'escolherRemarcar') escolherRemarcar();
+  else if (act === 'escolherCancelar') escolherCancelar();
+  else if (act === 'fecharAcao') fecharAcao();
+  else if (act === 'confirmarCancelamento') confirmarCancelamento();
+  else if (act === 'outro') marcarOutro(b.dataset.k, b.dataset.v === 'cancelar');
+  else if (act === 'cancelarConf') cancelarConfirmacao();
+  else if (act === 'desfazer') desfazer(Number(b.dataset.id));
+  else if (act === 'avancar') avancar(Number(b.dataset.min));
+  else if (act === 'recomecar') { cenario = { idx: null, passo: 0 }; recomecar(); }
+  else if (act === 'recepcao') { ui.modoRecepcao = !ui.modoRecepcao; render(); }
+  else if (act === 'cenario') iniciarCenario(Number(b.dataset.i));
+  else if (act === 'passo') rodarPasso(Number(b.dataset.j));
+});
+document.addEventListener('change', e => {
+  const b = e.target.closest('[data-act="regra"]'); if (!b) return;
+  definirRegra(b.dataset.k, Number(b.value));
+});
+document.addEventListener('submit', e => {
+  if (e.target.id !== 'formLogin') return;
+  e.preventDefault();
+  const f = new FormData(e.target);
+  fazerLogin(f.get('m'), f.get('c'));
+});
+
+render();
+</script>
+</body>
+</html>
